@@ -30,4 +30,27 @@ async function createVehicle({ make, model, category, price, quantity }) {
   return vehicles[0];
 }
 
-module.exports = { getAllVehicles, createVehicle };
+async function updateVehicle(id, { make, model, category, price, quantity }) {
+  const [result] = await pool.query(
+    `UPDATE vehicles
+     SET make = ?, model = ?, category = ?, price = ?, quantity = ?
+     WHERE id = ?`,
+    [make.trim(), model.trim(), category.trim(), price, quantity, id]
+  );
+
+  if (result.affectedRows === 0) {
+    return null;
+  }
+
+  const [vehicles] = await pool.query(
+    `SELECT id, make, model, category, price, quantity,
+            created_at, updated_at
+     FROM vehicles
+     WHERE id = ?`,
+    [id]
+  );
+
+  return vehicles[0] || null;
+}
+
+module.exports = { getAllVehicles, createVehicle, updateVehicle };
