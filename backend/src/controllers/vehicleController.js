@@ -3,6 +3,7 @@ const {
   getAllVehicles,
   createVehicle,
   updateVehicle,
+   deleteVehicle,
 } = require('../services/vehicleService');
 
 async function listVehicles(req, res) {
@@ -118,5 +119,33 @@ async function editVehicle(req, res) {
     });
   }
 }
+async function removeVehicle(req, res) {
+  const id = Number(req.params.id);
 
-module.exports = { listVehicles, addVehicle, editVehicle };
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return res.status(400).json({
+      message: 'A valid vehicle ID is required',
+    });
+  }
+
+  try {
+    const deleted = await deleteVehicle(id);
+
+    if (!deleted) {
+      return res.status(404).json({
+        message: 'Vehicle not found',
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Vehicle deleted successfully',
+    });
+  } catch (error) {
+    console.error('Failed to delete vehicle:', error.message);
+
+    return res.status(500).json({
+      message: 'An unexpected error occurred',
+    });
+  }
+}
+module.exports = { listVehicles, addVehicle, editVehicle, removeVehicle, };

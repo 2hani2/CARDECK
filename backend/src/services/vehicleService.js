@@ -53,4 +53,18 @@ async function updateVehicle(id, { make, model, category, price, quantity }) {
   return vehicles[0] || null;
 }
 
-module.exports = { getAllVehicles, createVehicle, updateVehicle };
+async function deleteVehicle(id) {
+  const [result] = await pool.query(
+    'DELETE FROM vehicles WHERE id = ?',
+    [id]
+  );
+
+  return result.affectedRows > 0;
+}
+
+module.exports = {
+  getAllVehicles,
+  createVehicle,
+  updateVehicle,
+  deleteVehicle,
+};
