@@ -14,4 +14,3 @@ describe('GET /api/health', () => {
     });
   });
 });
-
