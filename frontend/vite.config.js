@@ -1,9 +1,11 @@
 
-const { defineConfig } = require('vitest/config');
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
-module.exports = defineConfig({
-  test: {
-    globals: true,
-    environment: 'node',
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  server: {
+    port: 5174,
   },
 });
