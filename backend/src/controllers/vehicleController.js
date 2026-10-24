@@ -4,6 +4,8 @@ const {
   createVehicle,
   updateVehicle,
   deleteVehicle,
+  purchaseVehicle,
+  restockVehicle,
 } = require('../services/vehicleService');
 
 async function listVehicles(req, res) {
@@ -168,9 +170,83 @@ async function removeVehicle(req, res) {
   }
 }
 
+async function purchaseVehicleController(req, res) {
+  const id = Number(req.params.id);
+
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return res.status(400).json({
+      message: 'A valid vehicle ID is required',
+    });
+  }
+
+  try {
+    const result = await purchaseVehicle(id);
+
+    if (result.notFound) {
+      return res.status(404).json({
+        message: 'Vehicle not found',
+      });
+    }
+
+    if (result.outOfStock) {
+      return res.status(409).json({
+        message: 'Vehicle is out of stock',
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Vehicle purchased successfully',
+    });
+  } catch (error) {
+    console.error('Purchase vehicle error:', error.message);
+    return res.status(500).json({
+      message: 'An unexpected error occurred',
+    });
+  }
+}
+
+async function restockVehicleController(req, res) {
+  const id = Number(req.params.id);
+
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    return res.status(400).json({
+      message: 'A valid vehicle ID is required',
+    });
+  }
+
+  const quantity = Number(req.body?.quantity);
+
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    return res.status(400).json({
+      message: 'Quantity must be a positive integer',
+    });
+  }
+
+  try {
+    const result = await restockVehicle(id, quantity);
+
+    if (result.notFound) {
+      return res.status(404).json({
+        message: 'Vehicle not found',
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Vehicle restocked successfully',
+    });
+  } catch (error) {
+    console.error('Restock vehicle error:', error.message);
+    return res.status(500).json({
+      message: 'An unexpected error occurred',
+    });
+  }
+}
+
 module.exports = {
   listVehicles,
   addVehicle,
   editVehicle,
   removeVehicle,
+  purchaseVehicleController,
+  restockVehicleController,
 };

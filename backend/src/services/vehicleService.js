@@ -11,26 +11,22 @@ async function getAllVehicles(filters = {}) {
 
   const params = [];
 
-  // Search by make or model
   if (filters.search) {
     sql += ' AND (make LIKE ? OR model LIKE ?)';
     const searchTerm = `%${filters.search}%`;
     params.push(searchTerm, searchTerm);
   }
 
-  // Filter by category
   if (filters.category) {
     sql += ' AND category = ?';
     params.push(filters.category);
   }
 
-  // Filter by minimum price
   if (filters.minPrice !== undefined) {
     sql += ' AND price >= ?';
     params.push(filters.minPrice);
   }
 
-  // Filter by maximum price
   if (filters.maxPrice !== undefined) {
     sql += ' AND price <= ?';
     params.push(filters.maxPrice);
@@ -39,7 +35,6 @@ async function getAllVehicles(filters = {}) {
   sql += ' ORDER BY id DESC';
 
   const [vehicles] = await pool.query(sql, params);
-
   return vehicles;
 }
 
@@ -93,9 +88,52 @@ async function deleteVehicle(id) {
   return result.affectedRows > 0;
 }
 
+// Purchase one vehicle by decreasing stock by one.
+async function purchaseVehicle(id) {
+  const [result] = await pool.query(
+    `UPDATE vehicles
+     SET quantity = quantity - 1
+     WHERE id = ? AND quantity > 0`,
+    [id]
+  );
+
+  if (result.affectedRows === 0) {
+    const [vehicles] = await pool.query(
+      'SELECT id FROM vehicles WHERE id = ?',
+      [id]
+    );
+
+    if (vehicles.length === 0) {
+      return { notFound: true };
+    }
+
+    return { outOfStock: true };
+  }
+
+  return { success: true };
+}
+
+// Add the specified number of vehicles back into stock.
+async function restockVehicle(id, quantity) {
+  const [result] = await pool.query(
+    `UPDATE vehicles
+     SET quantity = quantity + ?
+     WHERE id = ?`,
+    [quantity, id]
+  );
+
+  if (result.affectedRows === 0) {
+    return { notFound: true };
+  }
+
+  return { success: true };
+}
+
 module.exports = {
   getAllVehicles,
   createVehicle,
   updateVehicle,
   deleteVehicle,
+  purchaseVehicle,
+  restockVehicle,
 };
