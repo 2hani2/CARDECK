@@ -3,12 +3,31 @@ const {
   getAllVehicles,
   createVehicle,
   updateVehicle,
-   deleteVehicle,
+  deleteVehicle,
 } = require('../services/vehicleService');
 
 async function listVehicles(req, res) {
+  const { search, category, minPrice, maxPrice } = req.query;
+  const filters = {};
+
+  if (typeof search === 'string' && search.trim()) {
+    filters.search = search.trim();
+  }
+
+  if (typeof category === 'string' && category.trim()) {
+    filters.category = category.trim();
+  }
+
+  if (minPrice !== undefined && minPrice !== '') {
+    filters.minPrice = Number(minPrice);
+  }
+
+  if (maxPrice !== undefined && maxPrice !== '') {
+    filters.maxPrice = Number(maxPrice);
+  }
+
   try {
-    const vehicles = await getAllVehicles();
+    const vehicles = await getAllVehicles(filters);
     return res.status(200).json({ vehicles });
   } catch (error) {
     console.error('Failed to retrieve vehicles:', error.message);
@@ -119,6 +138,7 @@ async function editVehicle(req, res) {
     });
   }
 }
+
 async function removeVehicle(req, res) {
   const id = Number(req.params.id);
 
@@ -142,10 +162,15 @@ async function removeVehicle(req, res) {
     });
   } catch (error) {
     console.error('Failed to delete vehicle:', error.message);
-
     return res.status(500).json({
       message: 'An unexpected error occurred',
     });
   }
 }
-module.exports = { listVehicles, addVehicle, editVehicle, removeVehicle, };
+
+module.exports = {
+  listVehicles,
+  addVehicle,
+  editVehicle,
+  removeVehicle,
+};
