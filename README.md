@@ -54,6 +54,15 @@ CARDECK is a car dealership inventory management web application. Visitors can e
 ### Editing inventory
 ![Admin inventory editing view](/screenshots/admin_edit.png)
 
+### Out of stock (Quantity 0)
+![Quantity 0](/screenshots/out_of_stock.ong.png)
+
+### User placing an order
+![Placing order](/screenshots/user_placing_order.png)
+
+
+
+
 ## Prerequisites
 
 - Node.js and npm
