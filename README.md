@@ -1,72 +1,66 @@
 # CARDECK — Car Dealership Inventory System
 
-CARDECK is a full-stack car dealership inventory management application. It provides vehicle listing, search and filtering, administrator-controlled inventory management, authentication, and stock purchase/restock operations.
+CARDECK is a car dealership inventory management web application. Visitors can explore and filter vehicles, while authenticated administrators can manage dealership inventory.
+
+**Repository:** https://github.com/2hani2/CARDECK
 
 ## Features
 
-### Authentication and authorization
-- User registration and login
-- JWT-based authentication
-- Role-based authorization for administrator operations
+### Vehicle discovery
+- Browse the vehicle collection.
+- Search by make or model.
+- Filter by category and minimum/maximum price.
+- View vehicle category, make, model, stock quantity, ID, and price.
 
-### Vehicle inventory
-- List available vehicles
-- Search by vehicle make or model
-- Filter by category and price range
-- Create, update, and delete vehicle records (administrator only)
-- Purchase a vehicle to reduce stock by one
-- Restock vehicles (administrator only)
-- Prevent purchases when stock is zero
+### Authentication and administration
+- Register and sign in.
+- Role-based access control for administrator actions.
+- Add, edit, and delete vehicles.
 
-### Frontend
-- React-based interface
-- Vehicle inventory browsing and search
-- Showcase vehicles when the backend cannot be reached
+### Inventory and purchasing
+- Purchase requests require authentication.
+- Successful purchases reduce available stock.
+- Purchases are rejected when stock is zero.
+- Administrators can restock vehicles.
 
-Note: Showcase vehicles are demonstration content, not necessarily records saved in the database.
+## Technology stack
 
-## Technology Stack
+- **Frontend:** React, Vite, CSS
+- **Backend:** Node.js, Express
+- **Database:** MySQL
+- **Authentication:** JSON Web Tokens (JWT)
+- **Testing:** Vitest and the project's backend test setup
 
-- Frontend: React, Vite, Tailwind CSS
-- Backend: Node.js, Express
-- Database: MySQL
-- Authentication: JSON Web Tokens (JWT)
-- Password hashing: bcryptjs
-- Testing: Vitest, Supertest, React Testing Library
+## Screenshots
 
-## Project Structure
+### Homepage
+![CARDECK homepage](docs/screenshots/homepage.png)
 
-```text
-CARDECK/
-├── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   ├── app.js
-│   │   └── server.js
-│   ├── tests/
-│   ├── .env.example
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   └── package.json
-├── README.md
-├── PROMPTS.md
-└── TEST_REPORT.md
-```
+### Vehicle inventory and filters
+![Vehicle inventory and filters](docs/screenshots/inventory.png)
+
+### Vehicle cards
+![Vehicle cards](docs/screenshots/vehicle-cards.png)
+
+### Featured cars
+![Featured cars on the homepage](docs/screenshots/featured-cars.png)
+
+### Sign-in page
+![CARDECK sign-in page](docs/screenshots/admin_login.png)
+
+### Admin inventory management
+![Admin inventory management form](docs/screenshots/admin_management.png)
+
+### Editing inventory
+![Admin inventory editing view](docs/screenshots/admin_edit.png)
 
 ## Prerequisites
-
-Install the following before running the application:
 
 - Node.js and npm
 - MySQL Server
 - Git
 
-## Setup
+## Run locally
 
 ### 1. Clone the repository
 
@@ -75,59 +69,48 @@ git clone https://github.com/2hani2/CARDECK.git
 cd CARDECK
 ```
 
-### 2. Configure MySQL
+### 2. Configure MySQL and environment variables
 
-Create a database in MySQL:
-
-```sql
-CREATE DATABASE car_dealership;
-```
-
-The application expects a `users` table and a `vehicles` table. The vehicle table needs fields for its ID, make, model, category, price, quantity, and timestamps. The users table needs an ID, name, email, password hash, role, and creation timestamp.
-
-Make sure your database tables match the schema used by the application before starting it. The repository's current file listing does not include a database schema or migration file.
-
-### 3. Configure backend environment variables
-
-Create a local environment file:
+Create the database and the tables required by the backend. From the repository root:
 
 ```bash
 cd backend
 cp .env.example .env
 ```
 
-Edit `backend/.env` with your own local MySQL credentials and a strong, private JWT secret:
+Set the values in `backend/.env` to match your local MySQL setup:
 
-```dotenv
+```env
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=your_mysql_username
 DB_PASSWORD=your_mysql_password
 DB_NAME=car_dealership
 JWT_SECRET=replace_with_a_long_random_secret
+PORT=3000
 ```
 
-Do not commit `.env` or share its secrets.
+Do not commit `.env` or share real database credentials or JWT secrets.
 
-### 4. Install backend dependencies
+**Database schema note:** Ensure the `users` and `vehicles` tables required by the backend exist before starting the server. Use the project's schema/migration file if one is included in your checkout.
 
-From the `backend` directory:
+### 3. Install dependencies and start the backend
+
+From the repository root:
 
 ```bash
+cd backend
 npm install
-```
-
-Start the backend:
-
-```bash
 npm run dev
 ```
 
-The frontend API configuration currently uses `http://localhost:3000/api`. Ensure the backend server uses the expected port.
+If `backend/package.json` does not define a `dev` script, use the start script defined there.
 
-### 5. Install frontend dependencies
+The API is configured to run at `http://localhost:3000` when `PORT=3000`.
 
-Open another terminal:
+### 4. Start the frontend
+
+Open a second terminal at the repository root:
 
 ```bash
 cd frontend
@@ -135,74 +118,58 @@ npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite in your terminal.
+Open the local URL printed by Vite. The frontend is configured to call `http://localhost:3000/api`.
 
-## API Overview
+## API overview
 
-The API base URL is `http://localhost:3000/api`.
+The backend provides health checks, authentication, and vehicle inventory endpoints. Vehicle routes support listing/searching and administrator-protected create, update, and delete operations. Purchase and restock operations are also implemented.
 
-| Method | Endpoint | Access |
-|---|---|---|
-| POST | `/auth/register` | Public |
-| POST | `/auth/login` | Public |
-| GET | `/auth/me` | Authenticated |
-| GET | `/vehicles` | Public |
-| POST | `/vehicles` | Administrator |
-| PUT | `/vehicles/:id` | Administrator |
-| DELETE | `/vehicles/:id` | Administrator |
-| POST | `/vehicles/:id/purchase` | Authenticated |
-| POST | `/vehicles/:id/restock` | Administrator |
+Check `backend/src/routes/` for exact endpoint paths and request formats.
 
-Vehicle listing supports search and filtering by make/model, category, minimum price, and maximum price.
+## Tests
 
-Protected endpoints require a valid bearer token in the `Authorization` header.
-
-## Running Tests
-
-### Backend
+Run backend tests:
 
 ```bash
 cd backend
 npm test
 ```
 
-### Frontend
+Run frontend tests:
 
 ```bash
 cd frontend
-npm test -- --run
+npm test
 ```
 
-### Test results recorded during development
+Latest development results recorded during work:
+- **Backend:** 36 tests passed across 10 test files.
+- **Frontend:** 3 tests passed in 1 test file.
+- **Frontend production build:** `npm run build` completed successfully.
 
-- Backend: 36 tests passed across 10 test files.
-- Frontend: 3 tests passed in 1 test file.
-- Total: 39 passing tests across both test suites.
-
-These results reflect the test runs performed during development; run the commands above to verify them in your own environment.
-
-See [TEST_REPORT.md](TEST_REPORT.md) for the recorded summary.
-
-## Screenshots
-
-Add screenshots of the running application here before submitting. Suggested screenshots:
-
-1. Homepage
-2. Vehicle inventory and search/filter interface
-3. Login or registration screen
-4. Administrator vehicle management
-5. Purchase/restock behavior, where demonstrated
-
-Screenshots have not been included in this repository documentation yet.
+Rerun the commands above to verify your current checkout. See [`TEST_REPORT.md`](TEST_REPORT.md) for the test report.
 
 ## My AI Usage
 
-AI tools, including ChatGPT, were used to assist with implementation, debugging, test development, and documentation.
+AI tools were used as development assistance for tasks such as understanding errors, discussing implementation approaches, and improving documentation. I reviewed and tested resulting changes rather than treating AI output as automatically correct.
 
-The developer remains responsible for reviewing generated code, running tests, understanding the implementation, and verifying the final submission.
+Before submission, edit this section so it accurately describes your own AI usage. The assignment also requests a root-level `PROMPTS.md` containing raw, unedited AI conversation logs or public conversation links. Add genuine records there before submitting; do not submit placeholders or AI-generated summaries as raw logs.
 
-A record of AI prompts and responses should be provided in `PROMPTS.md` using genuine, unedited conversation logs or public chat links, as required by the assignment. Do not represent summaries or reconstructed conversations as original logs.
+## Project structure
 
-## Repository
+```text
+CARDECK/
+├── backend/       # Express API, database access, middleware and tests
+├── frontend/      # React + Vite application
+├── docs/
+│   └── screenshots/
+├── README.md
+├── PROMPTS.md
+└── TEST_REPORT.md
+```
 
-GitHub: https://github.com/2hani2/CARDECK
+## Current scope and limitations
+
+- Showcase/demo vehicles displayed by the frontend may not be persisted database records. Use database-backed vehicles for real inventory operations.
+- Configure database schema and credentials for your own environment before running the application.
+- Add genuine AI conversation records to `PROMPTS.md` before submission.

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import './App.css';
 import './HomePage.css';
@@ -103,6 +102,19 @@ function App() {
   const [formMessage, setFormMessage] = useState('');
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [purchasingId, setPurchasingId] = useState(null);
+  const [purchaseMessage, setPurchaseMessage] = useState('');
+  const [purchaseError, setPurchaseError] = useState('');
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [deliveryStep, setDeliveryStep] = useState('details');
+  const [deliveryDetails, setDeliveryDetails] = useState({
+    fullName: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    pinCode: '',
+  });
 
   const isAdmin = authData?.user?.role === 'admin';
 
@@ -271,6 +283,108 @@ function App() {
     }
   }
 
+  function handlePurchaseVehicle(vehicle) {
+    setPurchaseError('');
+    setPurchaseMessage('');
+
+    if (!authData?.token) {
+      setShowAuth(true);
+      return;
+    }
+
+    if (String(vehicle.id).startsWith('sample-')) {
+      setPurchaseError(
+        'This is a showcase vehicle. Please select a vehicle from the saved inventory.'
+      );
+      return;
+    }
+
+    if (Number(vehicle.quantity) <= 0) {
+      setPurchaseError('This vehicle is out of stock.');
+      return;
+    }
+
+    setSelectedVehicle(vehicle);
+    setDeliveryStep('details');
+    setDeliveryDetails({
+      fullName: authData.user?.name || '',
+      phone: '',
+      address: '',
+      city: '',
+      state: '',
+      pinCode: '',
+    });
+  }
+
+  function handleDeliveryChange(event) {
+    const { name, value } = event.target;
+
+    setDeliveryDetails((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  }
+
+  async function confirmVehiclePurchase() {
+    if (!selectedVehicle || !authData?.token) return;
+
+    if (
+      !deliveryDetails.fullName.trim() ||
+      !deliveryDetails.phone.trim() ||
+      !deliveryDetails.address.trim() ||
+      !deliveryDetails.city.trim() ||
+      !deliveryDetails.state.trim() ||
+      !/^\d{6}$/.test(deliveryDetails.pinCode)
+    ) {
+      setPurchaseError(
+        'Please complete all delivery fields and enter a valid 6-digit PIN code.'
+      );
+      return;
+    }
+
+    if (!/^[0-9+() -]{7,20}$/.test(deliveryDetails.phone)) {
+      setPurchaseError('Please enter a valid phone number.');
+      return;
+    }
+
+    setPurchasingId(selectedVehicle.id);
+    setPurchaseError('');
+
+    try {
+      const response = await fetch(
+        `${API_URL}/vehicles/${selectedVehicle.id}/purchase`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${authData.token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || 'Unable to complete the purchase.'
+        );
+      }
+
+      setSelectedVehicle(null);
+      setDeliveryStep('details');
+      setPurchaseMessage(
+        `Purchase confirmed for ${selectedVehicle.make} ${selectedVehicle.model}.`
+      );
+
+      await fetchVehicles();
+    } catch (err) {
+      setPurchaseError(
+        err.message || 'Unable to complete the purchase.'
+      );
+    } finally {
+      setPurchasingId(null);
+    }
+  }
+
   async function handleDeleteVehicle(vehicle) {
     if (!authData?.token || !isAdmin) {
       setError('Admin sign-in is required for this action.');
@@ -370,6 +484,8 @@ function App() {
             <button className="text-link" onClick={() => setPage('inventory')}>View all cars <span aria-hidden="true">→</span></button>
           </div>
           {error && <p className="state-message error-message">{error}</p>}
+        {purchaseError && <p className="state-message error-message" role="alert">{purchaseError}</p>}
+        {purchaseMessage && <p className="state-message" role="status">{purchaseMessage}</p>}
           {loading ? <p className="state-message">Loading our collection...</p> : featuredVehicles.length === 0 ? (
             <div className="featured-empty"><p>Our collection is being prepared.</p><button className="text-link" onClick={() => setPage('inventory')}>Browse inventory →</button></div>
           ) : (
@@ -697,6 +813,22 @@ function App() {
                     </span>
                   </div>
 
+                  {authData && !isAdmin && (
+                    <div className="vehicle-admin-actions">
+                      <button
+                        className="primary-button"
+                        onClick={() => handlePurchaseVehicle(vehicle)}
+                        disabled={Number(vehicle.quantity) <= 0 || purchasingId === vehicle.id || String(vehicle.id).startsWith('sample-')}
+                      >
+                        {Number(vehicle.quantity) <= 0
+                          ? 'Out of stock'
+                          : purchasingId === vehicle.id
+                            ? 'Purchasing...'
+                            : 'Purchase'}
+                      </button>
+                    </div>
+                  )}
+
                   {isAdmin && !String(vehicle.id).startsWith('sample-') && (
                     <div className="vehicle-admin-actions">
                       <button
@@ -717,6 +849,217 @@ function App() {
                 </div>
               </article>
             ))}
+          </div>
+        )}
+
+        {selectedVehicle && (
+          <div className="purchase-overlay">
+            <section
+              className="purchase-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="purchase-title"
+            >
+              <button
+                type="button"
+                className="purchase-close"
+                onClick={() => {
+                  setSelectedVehicle(null);
+                  setPurchaseError('');
+                }}
+              >
+                Close
+              </button>
+
+              <p className="eyebrow">CARDECK COLLECTION</p>
+
+              <h2 id="purchase-title">
+                {selectedVehicle.make} {selectedVehicle.model}
+              </h2>
+
+              <img
+                className="purchase-car-image"
+                src={carImageFor(selectedVehicle, selectedVehicle.id)}
+                alt={`${selectedVehicle.make} ${selectedVehicle.model}`}
+              />
+
+              <div className="purchase-summary">
+                <div>
+                  <span>Category</span>
+                  <strong>{selectedVehicle.category}</strong>
+                </div>
+
+                <div>
+                  <span>Price</span>
+                  <strong>
+                    ₹{Number(selectedVehicle.price).toLocaleString('en-IN')}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Availability</span>
+                  <strong>
+                    {Number(selectedVehicle.quantity) > 0
+                      ? `${selectedVehicle.quantity} in stock`
+                      : 'Out of stock'}
+                  </strong>
+                </div>
+              </div>
+
+              <p className="purchase-note">
+                Please confirm the vehicle details with the dealership,
+                including its exact variant, model year, mileage, colour
+                and included features.
+              </p>
+
+              <hr />
+
+              <h3>Delivery information</h3>
+
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  setPurchaseError('');
+                  setDeliveryStep('confirmation');
+                }}
+              >
+                <div className="purchase-form-grid">
+                  <label>
+                    Full name
+                    <input
+                      name="fullName"
+                      value={deliveryDetails.fullName}
+                      onChange={handleDeliveryChange}
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    Phone number
+                    <input
+                      name="phone"
+                      type="tel"
+                      value={deliveryDetails.phone}
+                      onChange={handleDeliveryChange}
+                      pattern="[0-9+() -]{7,20}"
+                      required
+                    />
+                  </label>
+
+                  <label className="purchase-address-field">
+                    Full delivery address
+                    <textarea
+                      name="address"
+                      value={deliveryDetails.address}
+                      onChange={handleDeliveryChange}
+                      rows={3}
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    City
+                    <input
+                      name="city"
+                      value={deliveryDetails.city}
+                      onChange={handleDeliveryChange}
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    State
+                    <input
+                      name="state"
+                      value={deliveryDetails.state}
+                      onChange={handleDeliveryChange}
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    PIN code
+                    <input
+                      name="pinCode"
+                      value={deliveryDetails.pinCode}
+                      onChange={handleDeliveryChange}
+                      inputMode="numeric"
+                      pattern="[0-9]{6}"
+                      maxLength={6}
+                      required
+                    />
+                  </label>
+                </div>
+
+                {purchaseError && (
+                  <p className="admin-error" role="alert">
+                    {purchaseError}
+                  </p>
+                )}
+
+                {deliveryStep === 'details' && (
+                  <button
+                    className="primary-button purchase-confirm-button"
+                    type="submit"
+                    disabled={Number(selectedVehicle.quantity) <= 0}
+                  >
+                    Continue to order summary
+                  </button>
+                )}
+              </form>
+
+              {deliveryStep === 'confirmation' && (
+                <div className="purchase-final-confirmation">
+                  <h3>Review your order</h3>
+
+                  <p>
+                    <strong>Vehicle:</strong>{' '}
+                    {selectedVehicle.make} {selectedVehicle.model}
+                  </p>
+
+                  <p>
+                    <strong>Total:</strong>{' '}
+                    ₹{Number(selectedVehicle.price).toLocaleString('en-IN')}
+                  </p>
+
+                  <p>
+                    <strong>Deliver to:</strong>{' '}
+                    {deliveryDetails.fullName}, {deliveryDetails.address},{' '}
+                    {deliveryDetails.city}, {deliveryDetails.state} –{' '}
+                    {deliveryDetails.pinCode}
+                  </p>
+
+                  <p>
+                    <strong>Phone:</strong> {deliveryDetails.phone}
+                  </p>
+
+                  <button
+                    className="primary-button purchase-confirm-button"
+                    type="button"
+                    onClick={confirmVehiclePurchase}
+                    disabled={
+                      purchasingId === selectedVehicle.id ||
+                      Number(selectedVehicle.quantity) <= 0
+                    }
+                  >
+                    {purchasingId === selectedVehicle.id
+                      ? 'Processing purchase...'
+                      : 'Confirm final purchase'}
+                  </button>
+
+                  <button
+                    className="clear-button"
+                    type="button"
+                    onClick={() => {
+                      setDeliveryStep('details');
+                      setPurchaseError('');
+                    }}
+                  >
+                    Edit delivery details
+                  </button>
+                </div>
+              )}
+            </section>
           </div>
         )}
       </section>
