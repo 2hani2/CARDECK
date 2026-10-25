@@ -40,7 +40,7 @@ CARDECK is a car dealership inventory management web application. Visitors can e
 ![Vehicle inventory and filters](/screenshots/inventory.png)
 
 ### Vehicle cards
-![Vehicle cards](/screenshots/vehicle-cards.png)
+![Vehicle cards](screenshots/vehicle-cards.png)
 
 ### Featured cars
 ![Featured cars on the homepage](/screenshots/featured-cars.png)
@@ -58,7 +58,7 @@ CARDECK is a car dealership inventory management web application. Visitors can e
 ![Quantity 0](/screenshots/out_of_stock.ong.png)
 
 ### User placing an order
-![Placing order](/screenshots/user_placing_order.png)
+![Placing order](screenshots/user_placing_order.png)
 
 
 
