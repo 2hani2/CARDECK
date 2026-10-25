@@ -17,7 +17,7 @@ cd backend
 npm test
 ```
 
-**Recorded results**
+**Latest recorded results**
 - Test files passed: 10
 - Tests passed: 36
 - Tests failed: 0
@@ -33,7 +33,7 @@ cd frontend
 npm test -- --run
 ```
 
-**Recorded results**
+**Latest recorded results**
 - Test files passed: 1
 - Tests passed: 3
 - Tests failed: 0
@@ -55,9 +55,9 @@ The dedicated test file `backend/tests/purchaseRestock.test.js` contains five te
 
 **Recorded result:** All five tests passed.
 
-These five tests are included in the backend total; they are not additional tests.
+These five tests are included in the backend total and are not additional tests.
 
-## 5. Combined Results
+## 5. Combined Test Results
 
 | Component | Test files passed | Tests passed | Tests failed |
 |---|---:|---:|---:|
@@ -75,32 +75,42 @@ The frontend production build was successfully completed during development.
 npm --prefix frontend run build
 ```
 
-The recorded build output reported that Vite completed the production build successfully.
+The recorded output confirmed that Vite completed the production build successfully. The build should be rerun before final submission to verify the current code.
 
-## 7. Reproducing the Results
+## 7. Manual Verification
 
-Run the backend and frontend tests independently from their respective directories:
+During the latest local run:
+
+- The frontend development server started successfully using Vite.
+- The CARDECK homepage loaded successfully in the browser at `http://localhost:5177/`.
+- The frontend and backend automated test suites passed as recorded above.
+
+This manual check confirms that the homepage loads. It does not establish that every feature, including authentication, purchasing, restocking, and administrator operations, has been manually verified.
+
+## 8. Reproducing the Results
+
+Run the backend tests from the project root:
 
 ```bash
 cd backend
 npm test
 ```
 
-In a separate terminal, from the project root:
+Run the frontend tests in a separate terminal:
 
 ```bash
 cd frontend
 npm test -- --run
 ```
 
-To verify the frontend production build:
+To verify the production build:
 
 ```bash
 npm --prefix frontend run build
 ```
 
-The results above reflect development-time runs. Rerun the commands before final submission to verify the current code.
+The results in this report reflect the development runs recorded above. Rerun the commands before final submission to verify the current code.
 
-## 8. Limitations
+## 9. Limitations
 
-This report documents automated test results only. It does not claim that every project requirement has been tested, that a formal code coverage percentage has been measured, or that the application has undergone independent security testing.
+This report documents automated test results and the specific manual check described above. It does not claim that every project requirement has been tested, that a formal code coverage percentage has been measured, or that the application has undergone independent security testing.
