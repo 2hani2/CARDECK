@@ -34,25 +34,25 @@ CARDECK is a car dealership inventory management web application. Visitors can e
 ## Screenshots
 
 ### Homepage
-![CARDECK homepage](docs/screenshots/homepage.png)
+![CARDECK homepage](car-dealership/screenshots/homepage.png)
 
 ### Vehicle inventory and filters
-![Vehicle inventory and filters](docs/screenshots/inventory.png)
+![Vehicle inventory and filters](car-dealership/screenshots/inventory.png)
 
 ### Vehicle cards
-![Vehicle cards](docs/screenshots/vehicle-cards.png)
+![Vehicle cards](car-dealership/screenshots/vehicle-cards.png)
 
 ### Featured cars
-![Featured cars on the homepage](docs/screenshots/featured-cars.png)
+![Featured cars on the homepage](car-dealershipscreenshots/featured-cars.png)
 
 ### Sign-in page
-![CARDECK sign-in page](docs/screenshots/admin_login.png)
+![CARDECK sign-in page](car-dealership/screenshots/admin_login.png)
 
 ### Admin inventory management
-![Admin inventory management form](docs/screenshots/admin_management.png)
+![Admin inventory management form](car-dealership/screenshots/admin_management.png)
 
 ### Editing inventory
-![Admin inventory editing view](docs/screenshots/admin_edit.png)
+![Admin inventory editing view](car-dealership/screenshots/admin_edit.png)
 
 ## Prerequisites
 
